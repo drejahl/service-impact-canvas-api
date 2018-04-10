@@ -1,0 +1,299 @@
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: Service Impact Canvas API
+host: localhost:80
+basePath: /v1
+#
+schemes:
+  - http
+  - https
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /serviceImpactCanvas:
+    x-swagger-router-controller: serviceImpactCanvas
+    post:
+      security:
+        - Bearer: []
+      tags:
+        - ServiceImpactCanvas
+      operationId: canvasCreate
+      summary: canvasCreate
+      description: ''
+      deprecated: false
+      parameters:
+        - name: canvas
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ServiceImpactCanvas'
+      responses:
+        '201':
+          description: ServiceImpactCanvas
+          schema:
+            $ref: '#/definitions/ServiceImpactCanvas'
+    get:
+      security:
+        - Bearer: []
+      description: Returns an array of canvases
+      operationId: canvasFind
+      parameters:
+        - name: fields
+          in: query
+          required: false
+          description: ''
+          type: string
+        - name: page
+          in: query
+          required: false
+          description: ''
+          type: integer
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/ServiceImpactCanvas"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /serviceImpactCanvas/{id}:
+    x-swagger-router-controller: serviceImpactCanvas
+    get:
+      security:
+        - Bearer: []
+      description: Returns one service impact canvas
+      operationId: canvasGet
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ''
+          type: string
+        - name: fields
+          in: query
+          required: false
+          description: ''
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/ServiceImpactCanvas"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      security:
+        - Bearer: []
+      tags:
+        - ServiceImpactCanvas
+      operationId: canvasReplace
+      summary: canvasReplace
+      description: ''
+      deprecated: false
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ''
+          type: string
+        - name: canvas
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ServiceImpactCanvas'
+      responses:
+        '200':
+          description: ServiceImpactCanvas
+          schema:
+            $ref: '#/definitions/ServiceImpactCanvas'
+  /swagger:
+    x-swagger-pipe: swagger_raw
+
+definitions:
+  ServiceImpactCanvas:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+      description:
+        type: string
+      status:
+        type: string
+      owner:
+        type: string
+      created:
+        type: string
+      modified:
+        type: number
+      private:
+        type: number
+      roles:
+        type: array
+        items:
+          $ref: "#/definitions/Role"
+      jobs:
+        type: array
+        items:
+          $ref: "#/definitions/Job"
+      barriers:
+        type: array
+        items:
+          $ref: "#/definitions/Barrier"
+      accelerators:
+        type: array
+        items:
+          $ref: "#/definitions/Accelerator"
+      impacts:
+        type: array
+        items:
+          $ref: "#/definitions/Impact"
+      features:
+        type: array
+        items:
+          $ref: "#/definitions/Feature"
+      customerVision:
+        type: array
+        items:
+          $ref: "#/definitions/CustomerVision"
+      expectedOutcome:
+        type: array
+        items:
+          $ref: "#/definitions/ExpectedOutcome"
+      amplifiers:
+        type: array
+        items:
+          $ref: "#/definitions/Amplifier"
+  Role:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      type:
+        type: array
+        items:
+          type: string
+  Job:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      type:
+        type: array
+        items:
+          type: string
+  Barrier:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      type:
+        type: array
+        items:
+          type: string
+  Accelerator:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      type:
+        type: array
+        items:
+          type: string
+  Impact:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      type:
+        type: array
+        items:
+          type: string
+  Feature:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      type:
+        type: array
+        items:
+          type: string
+  CustomerVision:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      type:
+        type: array
+        items:
+          type: string
+  ExpectedOutcome:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      type:
+        type: array
+        items:
+          type: string
+  Amplifier:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      type:
+        type: array
+        items:
+          type: string
+  ErrorResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
