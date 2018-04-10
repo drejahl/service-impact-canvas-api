@@ -125,7 +125,6 @@ paths:
             $ref: '#/definitions/ServiceImpactCanvas'
   /swagger:
     x-swagger-pipe: swagger_raw
-
 definitions:
   ServiceImpactCanvas:
     properties:
