@@ -143,6 +143,7 @@ function canvasCreate(req, res) {
   canvas.owner = req.user.sub;
   canvas.created = Date.now();
   canvas.modified = Date.now();
+  canvas.userName = req.user["https://experimenz.com/name"];
 
   let baseUrl = req.url;
 
