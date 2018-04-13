@@ -8,7 +8,6 @@ var util = require('util');
 //var mongoUtils = require('../utilities/mongoUtils')
 
 var MongoClient = require('mongodb').MongoClient;
-var assert = require('assert');
 
 // Mongo URL
 const mongourl = process.env.MONGO_STRING;
@@ -24,7 +23,10 @@ function canvasFind(req, res) {
 
   // Use connect method to connect to the server
   MongoClient.connect(mongourl, function(err, db) {
-    assert.equal(null, err);
+    if (err!=null) {
+      res.status(500).send({ error: err });
+      return;
+    }
 
     var pageno = req.swagger.params.page.value ? parseInt(req.swagger.params.page.value) : 1;
 
@@ -48,7 +50,12 @@ function canvasFind(req, res) {
     // Find some documents
     collection.find({ $or: [ {owner: req.user.sub}, {private: false} ]},
         mongoUtils.fieldFilter(req.swagger.params.fields.value)).toArray(function(err, docs) {
-        assert.equal(err, null);
+          if (err!=null) {
+            res.status(500).send({ error: err });
+            return;
+          }
+
+        db.close();
 
         const totalsize = docs.length
 
@@ -108,10 +115,11 @@ function canvasFind(req, res) {
 function canvasGet(req, res) {
 
   // Use connect method to connect to the server
-  MongoClient.connect(mongourl, function(err, client) {
-    assert.equal(null, err);
-
-    const db = client.db("test");
+  MongoClient.connect(mongourl, function(err, db) {
+    if (err!=null) {
+      res.status(500).send({ error: err });
+      return;
+    }
 
     // Get the documents collection
 
@@ -121,7 +129,12 @@ function canvasGet(req, res) {
     // Find one document
     collection.findOne( query,
       mongoUtils.fieldFilter(req.swagger.params.fields.value), function(err, doc) {
-      assert.equal(err, null);
+        if (err!=null) {
+          res.status(500).send({ error: err });
+          return;
+        }
+
+        db.close();
 
       if ( doc != undefined && ( doc.owner === req.user.sub || doc.private === false )) {
         const halDoc = generateHalDoc( doc, req.url );
@@ -155,20 +168,25 @@ function canvasCreate(req, res) {
   var mongoDoc = Object.assign( {}, canvas );
 
   // Use connect method to connect to the server
-  MongoClient.connect(mongourl, function(err, client) {
-    assert.equal(null, err);
-
-    const db = client.db("test");
+  MongoClient.connect(mongourl, function(err, db) {
+    if (err!=null) {
+      res.status(500).send({ error: err });
+      return;
+    }
 
     // Get the documents collection
     var collection = db.collection('sic');
     // Insert some documents
     collection.insert( mongoDoc, function(err, result) {
-      assert.equal(err, null)
+      if (err!=null) {
+        res.status(500).send({ error: err });
+        return;
+      }
+
+      db.close();
       });
-    client.close();
     });
-    res.json( generateHalDoc( canvas, self ));
+  res.json( generateHalDoc( canvas, self ));
 }
 
 function canvasReplace(req, res) {
@@ -185,20 +203,25 @@ function canvasReplace(req, res) {
   var mongoDoc = Object.assign( {}, canvas );
 
   // Use connect method to connect to the server
-  MongoClient.connect(mongourl, function(err, client) {
-    assert.equal(null, err);
-
-    const db = client.db("test");
+  MongoClient.connect(mongourl, function(err, db) {
+    if (err!=null) {
+      res.status(500).send({ error: err });
+      return;
+    }
 
     // Get the documents collection
     var collection = db.collection('sic');
     // Push reference to experiment doc
     collection.update( {id: id}, mongoDoc, function(err, result) {
-      assert.equal(err, null)
-      });
-    client.close();
+      if (err!=null) {
+        res.status(500).send({ error: err });
+        return;
+      }
+
+      db.close();
     });
-    res.json( generateHalDoc( canvas, self ));
+  });
+  res.json( generateHalDoc( canvas, self ));
 }
 
 function generateHalDoc( doc, url ) {
