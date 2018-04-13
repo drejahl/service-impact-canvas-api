@@ -11,7 +11,7 @@ var MongoClient = require('mongodb').MongoClient;
 
 // Mongo URL
 const mongourl = process.env.MONGO_STRING;
-const dbname = process.env.MONGO_DB_NAME;
+const dbname = process.env.MONGO_DB_NAME || 'test';
 
 module.exports = {
   canvasFind,
