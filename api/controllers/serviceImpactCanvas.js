@@ -34,7 +34,7 @@ function canvasFind(req, res) {
 
     // Fixed page size for now
 
-    const pagesize = 5
+    const pagesize = 25
 
     const firstitem = (pageno-1)*pagesize
     const lastitem = firstitem + pagesize

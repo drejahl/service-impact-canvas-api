@@ -132,6 +132,8 @@ definitions:
         type: string
       name:
         type: string
+      businessModelCanvasRef: # HACK needs to be a proper href
+        type: string
       type:
         type: string
       description:
@@ -190,6 +192,8 @@ definitions:
         type: string
       name:
         type: string
+      customerSegmentRef:
+        type: string
       description:
         type: string
       type:
@@ -201,6 +205,8 @@ definitions:
       id:
         type: string
       name:
+        type: string
+      successCriteria:
         type: string
       description:
         type: string
