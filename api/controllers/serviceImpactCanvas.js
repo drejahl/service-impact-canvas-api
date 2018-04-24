@@ -31,6 +31,8 @@ function canvasFind(req, res) {
     const db = client.db(dbname);
 
     var pageno = req.swagger.params.page.value ? parseInt(req.swagger.params.page.value) : 1;
+    var priv = req.swagger.params.private.value;
+    var own = req.swagger.params.owning.value;
 
     // Fixed page size for now
 
@@ -49,8 +51,29 @@ function canvasFind(req, res) {
 
     var collection = db.collection('sic');
 
+    var query = {};
+    var subQuery = [];
+
+    if ((!own || own==="no") && !priv) {
+        query = { $or: [{owner: req.user.sub},{private: false}]};
+    } else {
+      if (own==="yes" || priv==="yes" ) {
+        subQuery.push({owner: req.user.sub});
+      }
+      if (priv==="yes") {
+        subQuery.push({private: true});
+      } else if (priv==="no") {
+        subQuery.push({private: false});
+      }
+      if (own==="no" && priv==="yes"){
+        res.status(403).send({ error: "Invalid filter" });
+        return;
+      }
+      query = { $and: subQuery };
+    }
+
     // Find some documents
-    collection.find({ $or: [ {owner: req.user.sub}, {private: false} ]},
+    collection.find(query,
         mongoUtils.fieldFilter(req.swagger.params.fields.value)).toArray(function(err, docs) {
           if (err!=null) {
             res.status(500).send({ error: err });

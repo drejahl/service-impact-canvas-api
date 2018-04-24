@@ -46,6 +46,16 @@ paths:
       description: Returns an array of canvases
       operationId: canvasFind
       parameters:
+        - name: private
+          in: query
+          required: false
+          description: ''
+          type: string
+        - name: owning
+          in: query
+          required: false
+          description: ''
+          type: string
         - name: fields
           in: query
           required: false
