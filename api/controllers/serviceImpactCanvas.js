@@ -17,6 +17,7 @@ module.exports = {
   canvasFind,
   canvasGet,
   canvasCreate,
+  canvasDelete,
   canvasReplace
 };
 
@@ -203,17 +204,31 @@ function canvasCreate(req, res) {
 
     // Get the documents collection
     var collection = db.collection('sic');
-    // Insert some documents
-    collection.insert( mongoDoc, function(err, result) {
+
+    collection.find({owner: req.user.sub}).toArray(function(err, docs) {
       if (err!=null) {
         res.status(500).send({ error: err });
         return;
       }
 
-      client.close();
-      });
+      const quota = req.user["https://experimenz.com/sicQuota"] || 5;
+
+      if ( docs.length < quota ) {
+        // Insert some documents
+        collection.insert( mongoDoc, function(err, result) {
+          if (err!=null) {
+            res.status(500).send({ error: err });
+            return;
+          }
+          client.close();
+          res.json( generateHalDoc( canvas, self ));
+        });
+      } else {
+        client.close();
+        res.status(403).send("Maximum number of Service Impact Canvases exceeded! Upgrade your subscription!");
+      }
     });
-  res.json( generateHalDoc( canvas, self ));
+  });
 }
 
 function canvasReplace(req, res) {
@@ -250,6 +265,32 @@ function canvasReplace(req, res) {
     });
   });
   res.json( generateHalDoc( canvas, self ));
+}
+
+function canvasDelete(req, res) {
+  var id = req.swagger.params.id.value;
+
+  // Use connect method to connect to the server
+  MongoClient.connect(mongourl, function(err, client) {
+    if (err!=null) {
+      res.status(500).send({ error: err });
+      return;
+    }
+    const db = client.db(dbname);
+
+    // Get the documents collection
+    var collection = db.collection('sic');
+    // Push reference to experiment doc
+    collection.deleteOne( {id: id}, function(err, result) {
+      if (err!=null) {
+        res.status(500).send({ error: err });
+        return;
+      }
+
+      client.close();
+    });
+  });
+  res.status(200).send();
 }
 
 function generateHalDoc( doc, url ) {

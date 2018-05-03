@@ -108,6 +108,28 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
+    delete:
+      security:
+        - Bearer: []
+      description: Returns one service impact canvas
+      operationId: canvasDelete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ''
+          type: string
+      responses:
+        "200":
+          description: Success
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
     put:
       security:
         - Bearer: []
@@ -147,6 +169,10 @@ definitions:
       type:
         type: string
       description:
+        type: string
+      board:
+        type: string
+      todoList:
         type: string
       status:
         type: string
@@ -204,6 +230,8 @@ definitions:
         type: string
       customerSegmentRef:
         type: string
+      keyPartnerRef:
+        type: string
       description:
         type: string
       type:
@@ -216,9 +244,17 @@ definitions:
         type: string
       name:
         type: string
+      roleRef:
+        type: array
+        items:
+          type: string
+      keyActivityRef:
+        type: string
       successCriteria:
         type: string
       description:
+        type: string
+      outcome:
         type: string
       type:
         type: array
@@ -230,6 +266,10 @@ definitions:
         type: string
       name:
         type: string
+      jobRef:
+        type: array
+        items:
+          type: string
       description:
         type: string
       type:
@@ -242,6 +282,10 @@ definitions:
         type: string
       name:
         type: string
+      jobRef:
+        type: array
+        items:
+          type: string
       description:
         type: string
       type:
@@ -254,24 +298,40 @@ definitions:
         type: string
       name:
         type: string
-      description:
-        type: string
-      type:
+      barrierRef:
         type: array
         items:
           type: string
+      acceleratorRef:
+        type: array
+        items:
+          type: string
+      description:
+        type: string
+      type:
+        type: string
   Feature:
     properties:
       id:
         type: string
       name:
         type: string
+      impactRef:
+        type: string
+      backLogItemId:
+        type: string
+      jobRef:
+        type: string
       description:
         type: string
+      when:
+        type: string
+      can:
+        type: string
+      want:
+        type: string
       type:
-        type: array
-        items:
-          type: string
+        type: string
   CustomerVision:
     properties:
       id:
