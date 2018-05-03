@@ -294,24 +294,33 @@ function canvasDelete(req, res) {
 
     const role = req.user["https://experimenz.com/role"] || "";
 
-    if (role!="admin" && canvas.private===false) {
-      res.status(403).send("Your role has no permission to delete a public Canvas!");
-      return;
-    }
-
     // Get the documents collection
     var collection = db.collection('sic');
-    // Push reference to experiment doc
-    collection.deleteOne( {id: id}, function(err, result) {
-      if (err!=null) {
-        res.status(500).send({ error: err });
-        return;
-      }
 
-      client.close();
+    // Find one document
+    collection.findOne( {id: id}, function(err, doc) {
+        if (err!=null) {
+          res.status(500).send({ error: err });
+          return;
+        }
+
+        if (role!="admin" && doc.private===false) {
+          res.status(403).send("Your role has no permission to delete a public Canvas!");
+          client.close();
+          return;
+        }
+
+        collection.deleteOne( {id: id}, function(err, result) {
+          if (err!=null) {
+            res.status(500).send({ error: err });
+            return;
+          }
+
+          client.close();
+          res.status(200).send();
+      });
     });
   });
-  res.status(200).send();
 }
 
 function generateHalDoc( doc, url ) {
