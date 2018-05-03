@@ -194,6 +194,13 @@ function canvasCreate(req, res) {
 
   var mongoDoc = Object.assign( {}, canvas );
 
+  const role = req.user["https://experimenz.com/role"] || "";
+
+  if (role!="admin" && canvas.private===false) {
+    res.status(403).send("Your role has no permission to create a public Canvas!");
+    return;
+  }
+
   // Use connect method to connect to the server
   MongoClient.connect(mongourl, function(err, client) {
     if (err!=null) {
