@@ -185,6 +185,10 @@ function canvasCreate(req, res) {
   canvas.modified = Date.now();
   canvas.userName = req.user["https://experimenz.com/name"];
 
+  if (canvas.private == null) {
+      canvas.private = true;
+  }
+
   let baseUrl = req.url;
 
   if (req.url.indexOf("?")>1) {
@@ -242,6 +246,8 @@ function canvasReplace(req, res) {
   var canvas = req.swagger.params.canvas.value;
   var id = req.swagger.params.id.value;
 
+  canvas.modified = Date.now();
+
   let baseUrl = req.url;
 
   if (req.url.indexOf("?")>1) {
@@ -253,11 +259,6 @@ function canvasReplace(req, res) {
 
   const role = req.user["https://experimenz.com/role"] || "";
 
-  if (role!="admin" && canvas.private===false) {
-    res.status(403).send("Your role has no permission to update a public Canvas!");
-    return;
-  }
-
   // Use connect method to connect to the server
   MongoClient.connect(mongourl, function(err, client) {
     if (err!=null) {
@@ -268,17 +269,31 @@ function canvasReplace(req, res) {
 
     // Get the documents collection
     var collection = db.collection('sic');
-    // Push reference to experiment doc
-    collection.update( {id: id}, mongoDoc, function(err, result) {
+
+    // Find one document
+    collection.findOne( {id: id}, function(err, doc) {
       if (err!=null) {
         res.status(500).send({ error: err });
         return;
       }
 
-      client.close();
+      if (role!="admin" && doc.private===false) {
+        res.status(403).send("Your role has no permission to delete a public Canvas!");
+        client.close();
+        return;
+      }
+      // Push reference to experiment doc
+      collection.update( {id: id}, mongoDoc, function(err, result) {
+        if (err!=null) {
+          res.status(500).send({ error: err });
+          return;
+        }
+
+        client.close();
+        res.json( generateHalDoc( canvas, self ));
+      });
     });
   });
-  res.json( generateHalDoc( canvas, self ));
 }
 
 function canvasDelete(req, res) {
