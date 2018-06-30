@@ -1,0 +1,4 @@
+{
+  "user_api_url": "https://api.experimenz.com/v1/user",
+  "user_api_url_d": "http://localhost:3000/v1/user"
+}

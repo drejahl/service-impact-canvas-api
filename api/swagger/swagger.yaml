@@ -181,7 +181,7 @@ definitions:
       userName:
         type: string
       created:
-        type: string
+        type: number
       modified:
         type: number
       private:

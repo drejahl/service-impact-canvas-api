@@ -1,11 +1,25 @@
 'use strict';
+var config = require('./config.json')
 
 const uuidv1 = require('uuid/v1');
 var mongoUtils = require('../utilities/mongoUtils')
 
 var util = require('util');
 
-//var mongoUtils = require('../utilities/mongoUtils')
+// LOGGING with WinstonJS
+const winston = require('winston');
+const logger = winston.createLogger({
+  transports: [
+    new winston.transports.Console({
+      json: true,
+      timestamp: true,
+      handleExceptions: true,
+      colorize: false,
+    })
+  ]
+});
+
+const axios = require('axios');
 
 var MongoClient = require('mongodb').MongoClient;
 
@@ -139,39 +153,52 @@ function canvasFind(req, res) {
 }
 
 function canvasGet(req, res) {
-
-  // Use connect method to connect to the server
-  MongoClient.connect(mongourl, function(err, client) {
-    if (err!=null) {
-      res.status(500).send({ error: err });
-      return;
+  var teamArray = [];
+  // Retrieve list of teams the user is member of
+  axios.get( config.user_api_url + `/${req.user.sub}/organisation`, {
+    headers: {
+      Authorization: req.headers.authorization,
+      Accept: req.headers.accept
     }
-    const db = client.db(dbname);
-
-    // Get the documents collection
-
-    var collection = db.collection('sic');
-    const query = { id: req.swagger.params.id.value.toString() }
-
-    // Find one document
-    collection.findOne( query,
-      mongoUtils.fieldFilter(req.swagger.params.fields.value), function(err, doc) {
-        if (err!=null) {
-          res.status(500).send({ error: err });
-          return;
-        }
-
-        client.close();
-
-      if ( doc != undefined && ( doc.owner === req.user.sub || doc.private === false )) {
-        const halDoc = generateHalDoc( doc, req.url );
-
-        res.json( halDoc )
-      } else {
-        // Error handling missing [To-Do]
-        res.json( "{}")
+  })
+  .then( r => {
+    r.data._embedded.item.forEach( o => { teamArray.push(o.id); });
+    // Use connect method to connect to the server
+    MongoClient.connect(mongourl, function(err, client) {
+      if (err!=null) {
+        res.status(500).send({ error: err });
+        return;
       }
+      const db = client.db(dbname);
+
+      // Get the documents collection
+
+      var collection = db.collection('sic');
+      const query = { id: req.swagger.params.id.value.toString() }
+
+      // Find one document
+      collection.findOne( query,
+        mongoUtils.fieldFilter(req.swagger.params.fields.value), function(err, doc) {
+          if (err!=null) {
+            res.status(500).send({ error: err });
+            return;
+          }
+
+          client.close();
+
+        if ( doc != undefined && ( doc.owner === req.user.sub || doc.private === false || teamArray.indexOf(doc.teamRef)>-1)) {
+          const halDoc = generateHalDoc( doc, req.url );
+
+          res.json( halDoc )
+        } else {
+          logger.info("No canvas found or user not permitted", {user: req.user.sub, sicId: query.id })
+          res.status(401).send("Not allowed");
+        }
+      });
     });
+  }).catch( err => {
+    console.error("ERROR:", err)
+    res.json( err )
   });
 }
 
@@ -203,6 +230,12 @@ function canvasCreate(req, res) {
   if (role!="admin" && canvas.private===false) {
     res.status(403).send("Your role has no permission to create a public Canvas!");
     return;
+  }
+
+  // If canvas is associated with a team, is the user entitled to create a canvas for that team?
+  if (canvas.teamRef && canvas.teamRef != "") {
+
+    // HACK - implementation missing
   }
 
   // Use connect method to connect to the server
@@ -278,7 +311,7 @@ function canvasReplace(req, res) {
       }
 
       if (role!="admin" && doc.private===false) {
-        res.status(403).send("Your role has no permission to delete a public Canvas!");
+        res.status(403).send("Your role has no permission to update a public Canvas!");
         client.close();
         return;
       }
