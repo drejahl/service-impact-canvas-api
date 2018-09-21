@@ -310,7 +310,7 @@ function canvasReplace(req, res) {
         return;
       }
 
-      if (role!="admin" && doc.private===false) {
+      if (role!="admin" && doc.private===false && doc.owner !== req.user.sub) {
         res.status(403).send("Your role has no permission to update a public Canvas!");
         client.close();
         return;
